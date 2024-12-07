@@ -80,18 +80,22 @@
       </div>
     </Dialog>
 
+    <Toast style="width: fit-content" />
   </div>
 </template>
 
 <script setup>
 import { ref } from 'vue';
-import axios from 'axios'; // For API requests
-import Toolbar from 'primevue/toolbar';
+import axios from 'axios';
 import InputText from 'primevue/inputtext';
 import Button from 'primevue/button';
 import Dialog from 'primevue/dialog';
 import RadioButton from 'primevue/radiobutton';
 import ProgressSpinner from 'primevue/progressspinner';
+import Toast from 'primevue/toast'
+import { useToast } from 'primevue/usetoast';
+
+const toast = useToast();
 
 const gettingContent = ref(false);
 const searchQuery = ref('');
@@ -109,6 +113,11 @@ const score = ref(0);
 
 const API_ENDPOINT = 'https://robbiehume.com/api'
 
+
+function showError(message) {
+    toast.add({ severity: 'error', detail: message, life: 3000, closable: false });
+};
+
 const searchTopic = async () => {
   gettingContent.value = true
   try {
@@ -118,6 +127,7 @@ const searchTopic = async () => {
     relatedTopics.value = response.data.related_topics;
   } catch (error) {
     console.error('Error fetching topic data:', error);
+    showError('Error fetching data from API')
   }
   gettingContent.value = false
 };
@@ -129,18 +139,25 @@ const selectTopic = async (topic) => {
 };
 
 const startQuiz = async () => {
-  if (contentResponse.value) {
-    // Fetch quiz questions from backend using the title from contentResponse
-    gettingQuiz.value = true
-    const response = await axios.post(`${API_ENDPOINT}/generate-quiz`, { topic: contentResponse.value.title });
+  try {
+    if (contentResponse.value) {
+      // Fetch quiz questions from backend using the title from contentResponse
+      gettingQuiz.value = true
+      const response = await axios.post(`${API_ENDPOINT}/generate-quiz`, { topic: contentResponse.value.title });
+      gettingQuiz.value = false
+      quizQuestions.value = response.data.questions;
+      currentQuestionIndex.value = 0;
+      currentQuestion.value = quizQuestions.value[currentQuestionIndex.value];
+      quizVisible.value = true;
+      score.value = 0;
+      answerChecked.value = false;
+      userAnswer.value = null;
+    } 
+  }
+  catch (error) {
     gettingQuiz.value = false
-    quizQuestions.value = response.data.questions;
-    currentQuestionIndex.value = 0;
-    currentQuestion.value = quizQuestions.value[currentQuestionIndex.value];
-    quizVisible.value = true;
-    score.value = 0;
-    answerChecked.value = false;
-    userAnswer.value = null;
+    console.error('Error fetching quiz data:', error);
+    showError('Error fetching quiz data from API')
   }
 };
 
@@ -195,6 +212,16 @@ span {
   display: flex;
   flex-direction: column;
   justify-content: center;
+}
+
+.p-toast-detail {
+  margin: 0;
+}
+
+.p-toast-message .p-toast-message-content {
+  display: flex;
+  align-items: center;
+  gap: 10px; 
 }
 
 </style>
