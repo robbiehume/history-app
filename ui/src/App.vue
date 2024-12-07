@@ -1,10 +1,6 @@
 <template>
   <div id="app" style="width: 90vw; max-width: 1000px">
-    <!-- <Toolbar> -->
-      <!-- <template #start> -->
         <h1 style="color:black">Learn About History!</h1>
-      <!-- </template> -->
-      <!-- <template #end> -->
         <div class="flex gap-2 justify-content-center mt-2">
           <InputText v-model="searchQuery" placeholder="Search for a topic, ask a question, look up a person, etc." @keyup.enter="searchTopic" style="width: 60%"/>
           <Button  @click="searchTopic" style="width: 50px">
@@ -12,12 +8,8 @@
             <i v-else class="pi pi-search" />
           </Button>
         </div>
-      <!-- </template> -->
-    <!-- </Toolbar> -->
 
     <div v-if="contentResponse" class="content flex flex-column align-items-center gap-3" style="color:black">
-    <!-- {{ contentResponse }} -->
-      <!-- <h2>{{ selectedTopic.title }}</h2> -->
       <h1>{{ contentResponse.title }}</h1>
 
       <div class="flex flex-column">
@@ -28,9 +20,6 @@
       <div class="flex flex-column ">
         <h3>Detailed Explanantion</h3>
         <span>{{ contentResponse.explanation }}</span>
-        <!-- <span v-for="(val, key) in contentResponse.explanation" :key="key">
-          <strong>{{ key }}</strong>: {{ val }}
-        </span> -->
       </div>
       
       <div v-if="contentResponse.key_events" class="flex flex-column align-items-start align-self-center justify-content-center"> 
@@ -42,18 +31,10 @@
       
       <div v-if="contentResponse.important_figures" class="flex flex-column align-items-start align-self-center justify-content-center">
         <h3>Important Figures:</h3>
-        <!-- <span v-for="(val, key) in contentResponse.important_figures" :key="key">
-          <strong>{{ key }}</strong>: {{ val }}
-        </span> -->
         <li v-for="figure of contentResponse.important_figures" :key="figure" style="text-align:left">
           <b>{{ figure.name }}</b>: {{ figure.reason }}
         </li>
       </div>
-
-      <!-- <template v-for="(key, index) in contentResponse" :key="index">
-        <li>{{ index }}: {{ key }}</li>
-      </template> -->
-
 
       <div class="flex flex-column align-self-center justify-content-center" style="width: fit-content;">
         <h3>Related Topics:</h3>
