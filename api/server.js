@@ -23,12 +23,12 @@ app.post("/generate-content", async (req, res) => {
       messages: [
         {
           role: "system",
-          content: 'I\'d like you to help me learn more about history. When I give you a historical topic or ask a specific question, please provide a short summary and longer in-depth explanation. Format the response with clear sections including the explanation, 3-5 key events (each with a name, date, and short description field), 3-5 important figures (each with a name and reason field), and a few related topics I might want to explore. The output should be formatted like: {"title":"Example Title","summary":"Example summary","explanation":"Example explanation","key_events":[{"name":"Example Event","date":"Example Date","description":"Example description"}],"important_figures":[{"name":"Example Person","reason":"Example reason"}],"related_topics":["Example Related Topic"]}',
+          content: 'I\'d like you to help me learn more about history. When I give you a historical topic or ask a specific question, please provide a short summary and long in-depth and detailed explanation. Format the response with clear sections including the explanation, 3-5 key events (each with a name, date, and short description field), 3-5 important figures (each with a name and reason field), and a few related topics I might want to explore. The output should be formatted like: {"title":"Example Title","summary":"Example summary","explanation":"Example explanation","key_events":[{"name":"Example Event","date":"Example Date","description":"Example description"}],"important_figures":[{"name":"Example Person","reason":"Example reason"}],"related_topics":["Example Related Topic"]}',
         },
         { role: "user", content: query },
       ],
       store: true,
-      temperature: 1,
+      temperature: 0,
       max_tokens: 4096,
       top_p: 1,
       frequency_penalty: 0,
@@ -61,7 +61,7 @@ app.post("/generate-quiz", async (req, res) => {
         { role: "user", content: topic },
       ],
       store: true,
-      temperature: 1,
+      temperature: .5,
       max_tokens: 300,
       top_p: 1,
       frequency_penalty: 0,
