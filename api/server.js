@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import OpenAI from "openai";
+import { createClient } from "redis";
 
 dotenv.config();
 
@@ -13,17 +14,37 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
+const redisClient = createClient({
+  url: process.env.REDIS_URL || "redis://localhost:6379",
+});
+
+await redisClient.connect();
+
+redisClient.on("error", (err) => console.error("Redis Client Error", err));
+
+const CACHE_TTL = 14 * 24 * 3600; // 2 week cache expiration in seconds (1,209,600)
 
 app.post("/generate-content", async (req, res) => {
   const { query = "" } = req.body;
+  const cacheKey = `content:${query}`;
+
+  let cachedContent;
+  try {
+    cachedContent = await redisClient.get(cacheKey);
+    if (cachedContent) {
+      return res.send(cachedContent);
+    }
+  } catch (err) {
+    console.error('Redis error (get):', err);
+  }
 
   try {
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini", 
+      model: "gpt-4o-mini",
       messages: [
         {
           role: "system",
-          content: 'I\'d like you to help me learn more about history. When I give you a historical topic or ask a specific question, please provide a short summary and long in-depth and detailed explanation. Format the response with clear sections including the explanation, 3-5 key events (each with a name, date, and short description field), 3-5 important figures (each with a name and reason field), and a few related topics I might want to explore. The output should be formatted like: {"title":"Example Title","summary":"Example summary","explanation":"Example explanation","key_events":[{"name":"Example Event","date":"Example Date","description":"Example description"}],"important_figures":[{"name":"Example Person","reason":"Example reason"}],"related_topics":["Example Related Topic"]}',
+          content: `I'd like you to help me learn more about history. When I give you a historical topic or ask a specific question, please provide a short summary and long in-depth and detailed explanation. Format the response with clear sections including the explanation, 3-5 key events (each with a name, date, and short description field), 3-5 important figures (each with a name and reason field), and a few related topics I might want to explore. The output should be formatted like: {"title":"Example Title","summary":"Example summary","explanation":"Example explanation","key_events":[{"name":"Example Event","date":"Example Date","description":"Example description"}],"important_figures":[{"name":"Example Person","reason":"Example reason"}],"related_topics":["Example Related Topic"]}`,
         },
         { role: "user", content: query },
       ],
@@ -36,7 +57,14 @@ app.post("/generate-content", async (req, res) => {
     });
 
     const content = completion.choices[0].message.content;
-    //console.log('content:', content)
+    //console.log('content:', content);
+    
+    try {
+      await redisClient.set(cacheKey, content, { EX: CACHE_TTL });
+    } catch (err) {
+      console.error("Redis error (set):", err);
+    }
+
     res.send(content);
 
   } catch (error) {
@@ -61,16 +89,16 @@ app.post("/generate-quiz", async (req, res) => {
         { role: "user", content: topic },
       ],
       store: true,
-      temperature: .5,
+      temperature: 0.5,
       max_tokens: 300,
       top_p: 1,
       frequency_penalty: 0,
       presence_penalty: 0,
     });
 
-
     const questions = completion.choices[0].message.content;
-    //console.log('questions:', questions)
+    //console.log('questions:', questions);
+
     res.send(questions);
 
   } catch (error) {
@@ -84,3 +112,4 @@ const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
