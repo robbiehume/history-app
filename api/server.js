@@ -60,7 +60,7 @@ app.post("/generate-content", async (req, res) => {
     //console.log('content:', content);
     
     try {
-      const title = JSON.parse(content).title
+      const title = JSON.parse(content).title.toLowerCase()
       await redisClient.set(title, content, { EX: CACHE_TTL });
       await redisClient.set(cacheKey, content, { EX: CACHE_TTL });
     } catch (err) {
