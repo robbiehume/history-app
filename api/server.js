@@ -22,11 +22,11 @@ await redisClient.connect();
 
 redisClient.on("error", (err) => console.error("Redis Client Error", err));
 
-const CACHE_TTL = 14 * 24 * 3600; // 2 week cache expiration in seconds (1,209,600)
+const CACHE_TTL = 14 * 24 * 3600;  // 2 week cache expiration in seconds (1,209,600)
 
 app.post("/generate-content", async (req, res) => {
   const { query = "" } = req.body;
-  const cacheKey = `content:${query}`;
+  const cacheKey = `content:${query}`.toLowerCase();
 
   let cachedContent;
   try {
