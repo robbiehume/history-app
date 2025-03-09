@@ -32,7 +32,7 @@ jobs:
       run: |
         echo "$SSH_PRIVATE_KEY" > private_key && chmod 600 private_key
         export SSH_OPTIONS="-o StrictHostKeyChecking=no"
-        scp $SSH_OPTIONS -i private_key -r ui/dist/* $EC2_USER@$EC2_HOST:/home/ec2-user/recipe_app
+        scp $SSH_OPTIONS -i private_key -r ui/dist/ $EC2_USER@$EC2_HOST:/home/ec2-user/history_app
         ssh $SSH_OPTIONS -i private_key $EC2_USER@$EC2_HOST << 'EOF'
           sudo systemctl restart nginx
         EOF
