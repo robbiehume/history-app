@@ -31,7 +31,8 @@ jobs:
         EC2_USER: ${{ secrets.EC2_USER }}
       run: |
         echo "$SSH_PRIVATE_KEY" > private_key && chmod 600 private_key
-        scp -i private_key -r ui/dist/* $EC2_USER@$EC2_HOST:/home/ec2-user/recipe_app
-        ssh -i private_key $EC2_USER@$EC2_HOST << 'EOF'
+        export SSH_OPTIONS="-o StrictHostKeyChecking=no"
+        scp $SSH_OPTIONS -i private_key -r ui/dist/* $EC2_USER@$EC2_HOST:/home/ec2-user/recipe_app
+        ssh $SSH_OPTIONS -i private_key $EC2_USER@$EC2_HOST << 'EOF'
           sudo systemctl restart nginx
         EOF
