@@ -1,0 +1,37 @@
+name: Deploy Vue.js to EC2
+
+on:
+  push:
+    branches:
+      - main  # Change this to your branch if needed
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: 20
+
+    - name: Install Dependencies and Build Vue.js App
+      run: |
+        cd ui
+        npm install
+        npm run build
+
+    - name: Deploy to EC2 via SSH
+      env:
+        SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
+        EC2_HOST: ${{ secrets.EC2_HOST }}
+        EC2_USER: ${{ secrets.EC2_USER }}
+      run: |
+        echo "$SSH_PRIVATE_KEY" > private_key && chmod 600 private_key
+        scp -i private_key -r ui/dist/* $EC2_USER@$EC2_HOST:/home/ec2-user/recipe_app
+        ssh -i private_key $EC2_USER@$EC2_HOST << 'EOF'
+          sudo systemctl restart nginx
+        EOF
