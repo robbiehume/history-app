@@ -24,6 +24,16 @@ redisClient.on("error", (err) => console.error("Redis Client Error", err));
 
 const CACHE_TTL = 14 * 24 * 3600;  // 2 week cache expiration in seconds (1,209,600)
 
+app.post("/admin/clear-cache", async (req, res) => {
+  try {
+    await redisClient.flushAll();
+    res.send({ status: "Cache cleared" });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+
 app.post("/generate-content", async (req, res) => {
   const { query = "" } = req.body;
   const cacheKey = `content:${query}`.toLowerCase();
