@@ -111,7 +111,7 @@ const userAnswer = ref(null);
 const answerChecked = ref(false);
 const score = ref(0);
 
-const API_ENDPOINT = 'https://robbiehume.com/api'
+const API_ENDPOINT = '/api'
 
 
 function showError(message) {
